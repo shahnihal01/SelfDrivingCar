@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg" href="logo.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Self Driving Car</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-200">
+    <div class="flex flex-col text-lg w-full sm:w-3/4 py-5">
+        <p class="text-3xl sm:text-5xl font-bold text-center">Self Driving Car</p>
+        <p class="text-xl text-center">based on Neural Networks</p>
+        <p class="text-xl text-center">By Nihal Shah</p>
+        <br>
+        <p class="text-xl font-bold px-4">Instructions:</p>
+        <p class="px-4">
+            This is a simulation of how AI would learn to drive a car.
+            In this simulation you have to save the best car intelligence by pressing the 'Save' button.
+            Discard the saved best car intelligence by pressing 'Delete' button.
+            You may need to save multiple times as the car would learn better the more time the simulation runs.
+            Or you can click the 'Solution' button to get the best AI intelligence and won't have to run the tests.
+            On your right is the neural network visualization and on the left is the simulation.
+            You can select the number of AI cars to run in a test by choosing No.of cars.
+            You can also choose the amount of mutation you need ranging from 0.1 to 1.0 . 
+            In simple words less the value of mutation, less will be the difference between parent and child generation.
+            More the value of mutation, more will be the deviation from parent generation.
+            If you don't want to save a particular test simply click 'Refresh' button.
+        </p>
+    </div>
+    <div class="flex flex-row w-full justify-center items-center">
+        <canvas class="bg-slate-400" id="carCanvas"></canvas>
+        <div class="flex flex-col items-center justify-center w-1/3 sm:w-1/5" id="verticalButtons">
+            <div class='dropdown flex flex-wrap py-2 justify-center items-center'>
+                <p class="text-lg px-2">No.of cars</p>
+                <select class="rounded-lg" name="carCount" id="carCount" 
+                    onchange="localStorage.setItem('carCount',this.value)">
+                    <option value="1" selected>1</option>
+                    <option value="10">10</option>
+                    <option value="100">100</option>
+                    <option value="400">400</option>
+                </select>
+            </div>
+            <div class='dropdown flex flex-wrap py-2 justify-center items-center'>
+                <p class="text-lg px-2">Mutation Level</p>
+                <select class="rounded-lg text-center" name="mutationAmount" id="mutationAmount" 
+                    onchange="localStorage.setItem('mutationAmount',this.value)">
+                    <option value="0.1">0.1</option>
+                    <option value="0.2">0.2</option>
+                    <option value="0.3">0.3</option>
+                    <option value="0.4">0.4</option>
+                    <option value="0.5" selected>0.5</option>
+                    <option value="0.6">0.6</option>
+                    <option value="0.7">0.7</option>
+                    <option value="0.8">0.8</option>
+                    <option value="0.9">0.9</option>
+                    <option value="1.0">1.0</option>
+                </select>
+            </div>
+            <button class="border-2 w-[90%] border-slate-900 rounded-lg m-[2px] cursor-pointer p-[5px] hover:bg-blue" onclick="save();refreshPage()">Save</button>
+            <button class="border-2 w-[90%] border-slate-900 rounded-lg m-[2px] cursor-pointer p-[5px] hover:bg-blue" onclick="discard();refreshPage()">Delete</button>
+            <button class="border-2 w-[90%] border-slate-900 rounded-lg m-[2px] cursor-pointer p-[5px] hover:bg-blue" onclick="bestSol();refreshPage()">Solution</button>
+            <button class="border-2 w-[90%] border-slate-900 rounded-lg m-[2px] cursor-pointer p-[5px] hover:bg-blue" onclick="refreshPage()">Refresh Page</button>
+            <p class="text-md text-center mt-5 flex sm:hidden">Rotate the phone to view the neural network visualization</p>
+        </div>
+        <canvas class="hidden bg-black sm:flex" id="networkCanvas"></canvas>
+    </div>
+    <div class="flex flex-col text-lg w-full sm:w-3/4 py-5">
+        <p class="text-xl font-bold px-4">Explanation:</p>
+        <p class="px-4">
+            We're working with relatively small networks here. The network is broken into levels.
+            In network.js, we have class level and a level has a layer of input neurons and the layer of output neurons.
+            Each output neuron has a bias, a value above which it will fire. Every input neuron is connected to every output neuron.
+            These connections have weights (strength of connection). The values of weight and biases range from -1 to +1. 
+            Negative values because in some situations these negative values help in choosing different option.
+            The inputs will be the values that we get from the car sensors. And what we do is compute  the outputs using these weights and biases 
+            that we define. Those are random for now.
+            We compute the output values using a feed forward  algorithm.
+            In this algorith we compute the sum of weight and input of all the inputs and check if this sum is greater than the bias of the output neuron.
+            If the sum is greater we set the output neuron to '1' i.e. on position. Else its set to '0'.
+            In the neural network we're essentially putting  in the output of the previous level, into the new level as the input.
+            And the final outputs will  tell us if the car should go forward, backward, left or right.
+            The car sensors sends low values to the neuron if object is far away and higher values when object is closer.
+            For Mutation of the Network, we iterate through all the biases of the levels and linearly interpolate (lerp = A+(B-A)*t) between current value of bias,
+            a random value between -1 and 1, and the amount of mutation. Same is done for weights.
+            So if the amount of mutation is zero, then our biases, and our weights just stayed the same. But  if this value is somewhere in between,
+            then it's going to move away from these biases, depending  on this amount.
+            This way the car learns to drive through the traffic using neural networks.
+        </p>
+    </div>
+    <script>
+        function refreshPage(){
+            window.location.reload();
+        }
+    </script>
+    <script src="visualizer.js"></script>
+    <script src="network.js"></script>
+    <script src="sensor.js"></script>
+    <script src="utils.js"></script>
+    <script src="road.js"></script>
+    <script src="controls.js"></script>
+    <script src="car.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
